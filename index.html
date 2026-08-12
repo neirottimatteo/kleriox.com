@@ -324,7 +324,10 @@
     var btn = form.querySelector("button");
     btn.disabled = true;
     btn.firstChild.textContent = "Joining… ";
-    fetch("https://waitlist.kleriox.com", {
+    // workers.dev, not waitlist.kleriox.com: the custom domain sat unprovisioned
+    // (no DNS record) after being added. Invisible to visitors either way — this
+    // is a background POST. Swap back if the custom domain ever comes up.
+    fetch("https://kleriox-waitlist.neirotti-matteo.workers.dev", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: email })
