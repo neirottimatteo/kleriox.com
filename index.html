@@ -149,6 +149,8 @@
   .wl .hp { position: absolute; left: -9999px; width: 0; height: 0; opacity: 0; }
   .wl .btn { margin-top: 0; }
   .wl-ok { display: none; margin-top: 28px; font-size: 16px; font-weight: 600; color: var(--cyan); }
+  .wl-err { display: none; margin-top: 14px; font-size: 14px; color: var(--muted); }
+  .wl-err a { color: var(--cyan); text-decoration: none; }
   .btn {
     display: inline-flex; align-items: center; gap: 10px;
     margin-top: 28px;
@@ -269,6 +271,7 @@
         <button class="btn" type="submit">Join the waitlist <span class="arrow">&rarr;</span></button>
       </form>
       <p class="wl-ok" id="wl-ok">&#10003;&nbsp; You're on the list — one email at launch, that's it.</p>
+      <p class="wl-err" id="wl-err">Hmm, that didn't go through. Try again in a minute, or write to <a href="mailto:fira@kleriox.com">fira@kleriox.com</a>.</p>
       <p class="status">
         <span class="dot"></span>CLOSED TESTING ON iOS &amp; ANDROID · PUBLIC LAUNCH
         AUTUMN 2026 · ONE EMAIL WHEN WE'RE LIVE — THAT'S IT.
@@ -329,9 +332,9 @@
       if (!r.ok) throw new Error("bad status");
       done();
     }).catch(function () {
-      // endpoint not up (yet) or unreachable -> plain email, nothing lost
-      window.location.href = "mailto:fira@kleriox.com?subject=Fira%20waitlist&body=" +
-        encodeURIComponent("Hi, please add me to the Fira launch waitlist: " + email);
+      // endpoint unreachable -> tell them inline, never hijack the click
+      var err = document.getElementById("wl-err");
+      err.style.display = "block";
       btn.disabled = false;
       btn.firstChild.textContent = "Join the waitlist ";
     });
