@@ -132,6 +132,23 @@
   .content p { margin-top: 16px; font-size: 17px; line-height: 1.7; color: var(--muted); max-width: 36em; }
   .content p strong { color: var(--fg); font-weight: 600; }
 
+  .wl { display: flex; gap: 10px; margin-top: 28px; flex-wrap: wrap; align-items: center; }
+  .wl input[type="email"] {
+    flex: 1 1 240px; max-width: 340px;
+    padding: 14px 22px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: rgba(237, 240, 255, 0.05);
+    color: var(--fg);
+    font-size: 16px; font-family: inherit;
+    outline: none;
+    transition: border-color 0.18s ease;
+  }
+  .wl input[type="email"]::placeholder { color: rgba(154, 162, 198, 0.55); }
+  .wl input[type="email"]:focus { border-color: rgba(55, 217, 233, 0.6); }
+  .wl .hp { position: absolute; left: -9999px; width: 0; height: 0; opacity: 0; }
+  .wl .btn { margin-top: 0; }
+  .wl-ok { display: none; margin-top: 28px; font-size: 16px; font-weight: 600; color: var(--cyan); }
   .btn {
     display: inline-flex; align-items: center; gap: 10px;
     margin-top: 28px;
@@ -246,7 +263,12 @@
         after publication. <strong>Follow the companies you care about. Skip
         the 200-page documents.</strong>
       </p>
-      <a class="btn" href="mailto:fira@kleriox.com?subject=Fira%20waitlist&body=Hi%2C%20please%20add%20me%20to%20the%20Fira%20launch%20waitlist.">Join the waitlist <span class="arrow">&rarr;</span></a>
+      <form class="wl" id="wl" novalidate>
+        <input type="email" name="email" placeholder="you@email.com" autocomplete="email" aria-label="Email" required>
+        <input class="hp" type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <button class="btn" type="submit">Join the waitlist <span class="arrow">&rarr;</span></button>
+      </form>
+      <p class="wl-ok" id="wl-ok">&#10003;&nbsp; You're on the list — one email at launch, that's it.</p>
       <p class="status">
         <span class="dot"></span>CLOSED TESTING ON iOS &amp; ANDROID · PUBLIC LAUNCH
         AUTUMN 2026 · ONE EMAIL WHEN WE'RE LIVE — THAT'S IT.
@@ -282,5 +304,39 @@
     <span>MADE IN TURIN</span>
   </footer>
 </div>
+
+<script>
+(function () {
+  var form = document.getElementById("wl");
+  if (!form) return;
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var email = form.email.value.trim();
+    if (!email || email.indexOf("@") < 1) { form.email.focus(); return; }
+    var done = function () {
+      form.style.display = "none";
+      document.getElementById("wl-ok").style.display = "block";
+    };
+    if (form.company.value) { done(); return; } // honeypot: bots fill it, humans never see it
+    var btn = form.querySelector("button");
+    btn.disabled = true;
+    btn.firstChild.textContent = "Joining… ";
+    fetch("https://waitlist.kleriox.com", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email })
+    }).then(function (r) {
+      if (!r.ok) throw new Error("bad status");
+      done();
+    }).catch(function () {
+      // endpoint not up (yet) or unreachable -> plain email, nothing lost
+      window.location.href = "mailto:fira@kleriox.com?subject=Fira%20waitlist&body=" +
+        encodeURIComponent("Hi, please add me to the Fira launch waitlist: " + email);
+      btn.disabled = false;
+      btn.firstChild.textContent = "Join the waitlist ";
+    });
+  });
+})();
+</script>
 </body>
 </html>
